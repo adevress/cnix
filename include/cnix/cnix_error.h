@@ -16,51 +16,43 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * */
-#ifndef CNIX_H
-#define CNIX_H
-
-#include <cnix/cnix_error.h>
-
+#ifndef CNIX_ERROR_H
+#define CNIX_ERROR_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-struct cnix_struct_internal;
 
-// main nix context
-typedef struct cnix_struct_internal* cnix_handle_t;
-
-
-/**
- * \brief create and initialize a default new nix handle
- *
- **/
-cnix_handle_t cnix_handle_new();
-
-/**
- * \brief destroy a nix handle
- *
- * */
-void cnix_handle_delete(cnix_handle_t handle);
+#define CNIX_ERROR_OK 0x00
+#define CNIX_ERROR_STORE_INIT 0x01
+#define CNIX_ERROR_INVALID_HANDLE 0x02
+#define CNIX_ERROR_OTHER 0xff
 
 
 /**
- * @brief cnix_store_path
- * @return the path of the nix store
+ * @brief cnix_error_string
+ * @return string message associated with the last cnix error
  */
-char* cnix_store_path(cnix_handle_t handle);
+const char* cnix_error_string();
 
 /**
- * @brief cnix_store_want_mass_query
- * @param handle
- * @return return 0 if wass query is not supported or 1 if supported, -1 if error
+ * @brief cnix_error_code
+ * @return error code associated with the last cnix error ( e.g CNIX_ERROR_STORE_NOT_FOUND )
  */
-int cnix_store_want_mass_query(cnix_handle_t handle);
+int cnix_error_code();
 
 
+/**
+ * @brief cnix_error_reset
+ *
+ * reset internal error status to CNIX_ERROR_OK
+ */
+void cnix_error_reset();
 
 
+// internal
+void cnix_error_set(int code, const char* msg);
 
 
 
@@ -68,5 +60,4 @@ int cnix_store_want_mass_query(cnix_handle_t handle);
 }
 #endif
 
-#endif // CNIX_H
-
+#endif // CNIX_ERROR_H

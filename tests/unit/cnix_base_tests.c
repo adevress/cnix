@@ -46,6 +46,57 @@ END_TEST
 
 
 
+START_TEST(cnix_store_mass_query)
+{
+    // test with invalid handle
+    cnix_handle_t h = NULL;
+
+    int mass_query = cnix_store_want_mass_query(h);
+    fail_unless(mass_query == -1);
+
+    int code = cnix_error_code();
+    fail_unless(code == CNIX_ERROR_INVALID_HANDLE);
+
+    h = cnix_handle_new();
+
+    mass_query = cnix_store_want_mass_query(h);
+    fail_unless(mass_query == 0 || mass_query == 1);
+
+    cnix_handle_delete(h);
+}
+END_TEST
+
+
+START_TEST(cnix_error_simple)
+{
+    int code = cnix_error_code();
+
+    fail_unless(code == CNIX_ERROR_OK);
+
+    const char* p = cnix_error_string();
+
+    char* pos = strstr(p, "OK");
+
+    fail_unless( pos != NULL);
+
+    cnix_error_set(CNIX_ERROR_OTHER, "major failure");
+
+    code = cnix_error_code();
+    fail_unless(code == CNIX_ERROR_OTHER);
+
+    const char* p2 = cnix_error_string();
+
+    fail_unless(strcmp(p2, "major failure") == 0);
+
+    cnix_error_reset();
+
+    code = cnix_error_code();
+    fail_unless(code == CNIX_ERROR_OK);
+
+}
+END_TEST
+
+
 int main(void){
 
 
@@ -58,6 +109,8 @@ int main(void){
     suite_add_tcase(s1, tc1_1);
     tcase_add_test(tc1_1, cnix_base_instanciate);
     tcase_add_test(tc1_1, cnix_base_store_path);
+    tcase_add_test(tc1_1, cnix_store_mass_query);
+    tcase_add_test(tc1_1, cnix_error_simple);
 
     srunner_run_all(sr, CK_ENV);
     nf = srunner_ntests_failed(sr);
