@@ -1,10 +1,10 @@
-cnix - C API to the nix package manager
+CNIX - C API to the nix package manager
 
 # Brief
 
 cnix provides a stable C API and ABI to the Nix package manager.   
 
-cnix makes easier the creation of langage bindings ( Python, Ruby, Golang, Rust ) for the Nix package manager 
+cnix makes easier the creation of langage bindings ( Python, Ruby, Golang, Rust, ... ) for the Nix package manager 
 
 
 # Usage
