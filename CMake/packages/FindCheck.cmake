@@ -18,7 +18,7 @@ INCLUDE( FindPkgConfig )
 
 # Look for CHECK include dir and libraries
 IF( NOT CHECK_INCLUDE_DIRS OR NOT CHECK_LIBRARIES )
-
+	set(CHECK_LIBRARY_SUBUNIT "")
 	FIND_PATH( CHECK_INCLUDE_DIRS check.h )
 
         FIND_LIBRARY( CHECK_LIBRARY_CHECK NAMES check )
