@@ -28,6 +28,8 @@
 #include <cnix/cnix_error.h>
 
 
+#include <nix/store-api.hh>
+
 
 // invalid handle exception
 class cnix_invalid_handle : public std::invalid_argument{
@@ -42,6 +44,12 @@ boost::optional<Res> error_handler(Fun && f, int default_error = CNIX_ERROR_OTHE
         return f();
     }catch(cnix_invalid_handle & e){
         cnix_error_set(CNIX_ERROR_INVALID_HANDLE, e.what());
+    } catch( nix::Error & e){
+        if(std::string(e.what()) == "invalid hash part"){
+            cnix_error_set(CNIX_ERROR_INVALID_HASH, e.what());
+        }else{
+            cnix_error_set(default_error, e.what());
+        }
     } catch(std::exception & e){
         cnix_error_set(default_error, e.what());
     } catch(...){

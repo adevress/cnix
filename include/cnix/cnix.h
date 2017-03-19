@@ -47,9 +47,25 @@ void cnix_handle_delete(cnix_handle_t handle);
 
 /**
  * @brief cnix_store_path
- * @return the path of the nix store
+ * @return the path of the nix store. The returned string should be freed after usage.
  */
 char* cnix_store_path(cnix_handle_t handle);
+
+/**
+ * @brief cnix_all_paths
+ *
+ * @param handle
+ * @return all existing derivation paths in the nix store. The returned
+ * array of string should be freed after usage
+ */
+char** cnix_all_paths(cnix_handle_t handle);
+
+/**
+ * @brief cnix_hash_to_path
+ * @return path of a derivation for a given path. NULL if does not exist.
+ *  The returned string should be freed after usage.
+ */
+char* cnix_hash_to_path(cnix_handle_t handle, const char* hash);
 
 /**
  * @brief cnix_store_want_mass_query

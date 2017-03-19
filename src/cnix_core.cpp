@@ -25,6 +25,8 @@
 #include <iostream>
 #include <memory>
 #include <cstring>
+#include <set>
+#include <string>
 
 // all internal nix handle
 #include <nix/store-api.hh>
@@ -44,6 +46,14 @@ struct cnix_struct_internal{
 
     bool want_mass_query() const{
         return _store->wantMassQuery();
+    }
+
+    std::set<std::string> all_path() const{
+        return _store->queryAllValidPaths();
+    }
+
+    std::string query_path_from_hash(const std::string & hash) const{
+        return _store->queryPathFromHashPart(hash);
     }
 
     std::shared_ptr<nix::Store> _store;
@@ -94,7 +104,7 @@ CNIX_CDEF int cnix_store_want_mass_query(cnix_handle_t handle){
 
         return unwrap_handle(handle)->want_mass_query();
 
-    }, CNIX_ERROR_STORE_INIT);
+    }, CNIX_ERROR_OTHER);
 
     if(!res)
         return -1;
@@ -103,4 +113,43 @@ CNIX_CDEF int cnix_store_want_mass_query(cnix_handle_t handle){
 }
 
 
+CNIX_CDEF char** cnix_all_paths(cnix_handle_t handle){
+    auto res = error_handler<char**>([&]{
+
+        auto set_string =  unwrap_handle(handle)->all_path();
+
+        char ** arr = (char**) malloc(sizeof(char*) * (set_string.size()+1));
+        if(arr == nullptr) throw std::bad_alloc();
+
+        std::size_t nelem =0;
+        for( auto & str : set_string){
+            arr[nelem] = strdup(str.c_str()) ;
+            nelem += 1;
+        }
+        arr[nelem] = nullptr;
+        return arr;
+
+    }, CNIX_ERROR_OTHER);
+
+    if(!res)
+        return NULL;
+
+    return res.value();
+}
+
+
+CNIX_CDEF char* cnix_hash_to_path(cnix_handle_t handle, const char* hash){
+
+    auto res = error_handler<char*>([&]{
+
+        auto res =  unwrap_handle(handle)->query_path_from_hash(hash);
+        return strdup(res.c_str());
+
+    }, CNIX_ERROR_OTHER);
+
+    if(!res)
+        return NULL;
+
+    return res.value();
+}
 

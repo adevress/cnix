@@ -13,6 +13,16 @@
 #include <stdio.h>
 
 
+void free_array_str(char** array_str){
+    char** p = array_str;
+    while(*p != NULL){
+        free(*p);
+        p++;
+    }
+    free(array_str);
+}
+
+
 START_TEST(cnix_base_instanciate)
 {
     cnix_handle_t h = cnix_handle_new();
@@ -67,6 +77,77 @@ START_TEST(cnix_store_mass_query)
 END_TEST
 
 
+
+START_TEST(test_cnix_all_paths)
+{
+
+    cnix_handle_t h = cnix_handle_new();
+
+    fail_unless(h != NULL);
+
+    char ** paths = cnix_all_paths(h);
+
+
+    fail_unless(paths != NULL);
+
+
+    char** p = paths;
+    while(*p != NULL){
+        printf(" path: %s \n", *p);
+        p++;
+    }
+
+    free_array_str(paths);
+
+}
+END_TEST
+
+
+
+START_TEST(cnix_path_query)
+{
+    cnix_handle_t h = cnix_handle_new();
+
+    fail_unless(h != NULL);
+
+    char* inexisting_path = cnix_hash_to_path(h, "not-existing");
+
+    fail_unless(inexisting_path == NULL);
+    fail_unless(cnix_error_code() == CNIX_ERROR_INVALID_HASH);
+
+    printf("report: %s\n", cnix_error_string());
+    cnix_error_reset();
+
+
+    char ** paths = cnix_all_paths(h);
+
+    fail_unless(paths != NULL);
+
+    char* path = paths[0];
+    char* file_delim = strrchr(path, '/');
+
+    fail_unless(file_delim != NULL);
+    file_delim++;
+
+    char* end_hash_delim = strchr(file_delim, '-');
+    fail_unless(end_hash_delim != NULL);
+
+    char* hash = strndup(file_delim, (end_hash_delim-file_delim));
+
+    char* path_back = cnix_hash_to_path(h, hash);
+
+    int diff = strcmp(path_back, path);
+
+    fail_unless(diff == 0);
+
+    free(path_back);
+    free(hash);
+    free_array_str(paths);
+
+}
+END_TEST
+
+
 START_TEST(cnix_error_simple)
 {
     int code = cnix_error_code();
@@ -97,6 +178,10 @@ START_TEST(cnix_error_simple)
 END_TEST
 
 
+
+
+
+
 int main(void){
 
 
@@ -110,6 +195,8 @@ int main(void){
     tcase_add_test(tc1_1, cnix_base_instanciate);
     tcase_add_test(tc1_1, cnix_base_store_path);
     tcase_add_test(tc1_1, cnix_store_mass_query);
+    tcase_add_test(tc1_1, test_cnix_all_paths);
+    tcase_add_test(tc1_1, cnix_path_query);
     tcase_add_test(tc1_1, cnix_error_simple);
 
     srunner_run_all(sr, CK_ENV);
