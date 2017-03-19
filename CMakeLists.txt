@@ -18,6 +18,7 @@ include(DefineInstallationPaths)
 include(ReleaseDebugAutoFlags)
 include(DetectCXX11Support)
 
+add_definitions( -DNIX_1_11_VERSION )
 
 # nix API makes mandatory C++11
 SET(CMAKE_CXX_FLAGS "-std=c++11")

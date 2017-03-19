@@ -32,6 +32,31 @@
 #include <nix/store-api.hh>
 
 
+#ifdef NIX_1_11_VERSION
+
+struct cnix_struct_internal{
+    cnix_struct_internal(): _store(nix::openStore()){
+
+    }
+
+    virtual ~cnix_struct_internal(){}
+
+    const std::string get_store() const{
+		auto s = _store->queryAllValidPaths();
+		return *(s.begin());
+    }
+
+    bool want_mass_query() const{
+        return true;
+    }
+
+    std::shared_ptr<nix::StoreAPI> _store;
+};
+
+
+
+
+#else 
 
 struct cnix_struct_internal{
     cnix_struct_internal(): _store(nix::openStore()){
@@ -60,6 +85,8 @@ struct cnix_struct_internal{
 };
 
 
+#endif 
+
 
 cnix_struct_internal* unwrap_handle(cnix_handle_t h){
     if(!h){
@@ -85,6 +112,7 @@ CNIX_CDEF cnix_handle_t cnix_handle_new(){
 CNIX_CDEF void cnix_handle_delete(cnix_handle_t handle){
     delete static_cast<cnix_struct_internal*>(handle);
 }
+
 
 CNIX_CDEF char* cnix_store_path(cnix_handle_t handle){
     auto res = error_handler<char*>([&]{
