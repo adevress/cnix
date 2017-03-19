@@ -42,6 +42,9 @@ endforeach()
 
 
 foreach(COMPILER_LANGUAGE ${SUPPORTED_COMPILER_LANGUAGE_LIST})
+	# preset default
+	set(CMAKE_${COMPILER_LANGUAGE}_FORTIFY "")
+
 
 	# XLC compiler
 	if(CMAKE_${COMPILER_LANGUAGE}_COMPILER_IS_XLC) 
@@ -57,9 +60,9 @@ foreach(COMPILER_LANGUAGE ${SUPPORTED_COMPILER_LANGUAGE_LIST})
 		set(CMAKE_${COMPILER_LANGUAGE}_OPT_AGGRESSIVE "-O3")
 		set(CMAKE_${COMPILER_LANGUAGE}_OPT_FASTEST "-O5")
 
-		set(CMAKE_${COMPILER_LANGUAGE}_NO_ASSERT "-DNDEBUG")
-
 		set(CMAKE_${COMPILER_LANGUAGE}_STACK_PROTECTION "-qstackprotect")
+
+		set(CMAKE_${COMPILER_LANGUAGE}_FORTIFY "-D_FORTIFY_SOURCE=2")
 
 		set(CMAKE_${COMPILER_LANGUAGE}_POSITION_INDEPENDANT "-qpic=small")
 
@@ -80,9 +83,19 @@ foreach(COMPILER_LANGUAGE ${SUPPORTED_COMPILER_LANGUAGE_LIST})
 		# enable by default on MSVC
 		set(CMAKE_${COMPILER_LANGUAGE}_POSITION_INDEPENDANT "")
 
+        ## ICC intel
+        elseif(CMAKE_${COMPILER_LANGUAGE}_COMPILER_IS_ICC)
 
-	## GCC, CLANG, rest of the world
-	else() 
+            set(CMAKE_${COMPILER_LANGUAGE}_OPT_NONE "-O0")
+            set(CMAKE_${COMPILER_LANGUAGE}_OPT_NORMAL "-O2")
+            set(CMAKE_${COMPILER_LANGUAGE}_OPT_AGGRESSIVE "-O3")
+            set(CMAKE_${COMPILER_LANGUAGE}_OPT_FASTEST "-Ofast")
+
+            set(CMAKE_${COMPILER_LANGUAGE}_FORTIFY "-D_FORTIFY_SOURCE=2")
+            set(CMAKE_${COMPILER_LANGUAGE}_STACK_PROTECTION "-fstack-protector-strong")
+
+        ## GCC, CLANG
+        elseif(CMAKE_${COMPILER_LANGUAGE}_COMPILER_IS_CLANG OR CMAKE_${COMPILER_LANGUAGE}_COMPILER_IS_GCC)
 
 		set(CMAKE_${COMPILER_LANGUAGE}_WARNING_ALL "-Wall -Wextra")
 
@@ -93,10 +106,14 @@ foreach(COMPILER_LANGUAGE ${SUPPORTED_COMPILER_LANGUAGE_LIST})
 		set(CMAKE_${COMPILER_LANGUAGE}_OPT_AGGRESSIVE "-O3")
 		set(CMAKE_${COMPILER_LANGUAGE}_OPT_FASTEST "-Ofast -march=native")
 
+                if(CMAKE_${COMPILER_LANGUAGE}_COMPILER_IS_GCC AND ( CMAKE_${COMPILER_LANGUAGE}_COMPILER_VERSION VERSION_GREATER "4.9.0") )
+                    set(CMAKE_${COMPILER_LANGUAGE}_STACK_PROTECTION "-fstack-protector-strong")
+                else()
+                    set(CMAKE_${COMPILER_LANGUAGE}_STACK_PROTECTION "-fstack-protector")
+                endif()
 
-		set(CMAKE_${COMPILER_LANGUAGE}_NO_ASSERT "-DNDEBUG")
 
-		set(CMAKE_${COMPILER_LANGUAGE}_STACK_PROTECTION "-fstack-protector")
+		set(CMAKE_${COMPILER_LANGUAGE}_FORTIFY "-D_FORTIFY_SOURCE=2")
 
 		set(CMAKE_${COMPILER_LANGUAGE}_POSITION_INDEPENDANT "-fPIC")
 
@@ -111,10 +128,16 @@ foreach(COMPILER_LANGUAGE ${SUPPORTED_COMPILER_LANGUAGE_LIST})
 			set(CMAKE_${COMPILER_LANGUAGE}_GEN_NATIVE "-mcpu=native")
 		else()
 			set(CMAKE_${COMPILER_LANGUAGE}_GEN_NATIVE "-march=native")
-		endif()
+                endif()
+
+        else() ## rest of the world : Do nothing
+
 	endif()
 
+	## Common to all
 
+	# disable assert
+	set(CMAKE_${COMPILER_LANGUAGE}_DISABLE_ASSERT "-DNDEBUG")
 
 endforeach()
 
